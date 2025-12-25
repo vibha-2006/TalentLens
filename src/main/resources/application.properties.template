@@ -1,0 +1,87 @@
+# TalentLens Application Configuration Template
+# Copy this file and update with your actual values
+
+# ===========================================
+# REQUIRED: OpenAI Configuration
+# ===========================================
+# Get your API key from: https://platform.openai.com/api-keys
+openai.api.key=YOUR_OPENAI_API_KEY_HERE
+openai.model=gpt-3.5-turbo
+# Alternative models: gpt-4, gpt-4-turbo, gpt-3.5-turbo-16k
+
+# ===========================================
+# Server Configuration
+# ===========================================
+server.port=8080
+
+# ===========================================
+# Database Configuration (H2 In-Memory)
+# ===========================================
+spring.datasource.url=jdbc:h2:mem:talentlens
+spring.datasource.driverClassName=org.h2.Driver
+spring.datasource.username=sa
+spring.datasource.password=
+
+# ===========================================
+# JPA/Hibernate Configuration
+# ===========================================
+spring.jpa.database-platform=org.hibernate.dialect.H2Dialect
+spring.jpa.hibernate.ddl-auto=update
+spring.jpa.show-sql=true
+
+# ===========================================
+# H2 Console (for debugging)
+# ===========================================
+# Access at: http://localhost:8080/h2-console
+spring.h2.console.enabled=true
+spring.h2.console.path=/h2-console
+
+# ===========================================
+# File Upload Configuration
+# ===========================================
+spring.servlet.multipart.max-file-size=10MB
+spring.servlet.multipart.max-request-size=10MB
+
+# ===========================================
+# Google Drive Integration (Optional)
+# ===========================================
+# Set to true ONLY if you have configured Google Drive credentials
+# See GOOGLE_DRIVE_SETUP.md for instructions
+google.drive.enabled=false
+
+# ===========================================
+# Logging Configuration
+# ===========================================
+logging.level.org.example=DEBUG
+logging.level.org.springframework.web=INFO
+logging.level.org.hibernate.SQL=DEBUG
+
+# ===========================================
+# CORS Configuration (if needed)
+# ===========================================
+# Uncomment if you need to allow different origins
+# cors.allowed.origins=http://localhost:3000,http://localhost:3001
+
+# ===========================================
+# Production Configuration Notes
+# ===========================================
+# For production deployment, consider:
+# 1. Use a persistent database (PostgreSQL, MySQL)
+#    spring.datasource.url=jdbc:postgresql://localhost:5432/talentlens
+#    spring.datasource.username=your_db_user
+#    spring.datasource.password=your_db_password
+#
+# 2. Disable H2 console
+#    spring.h2.console.enabled=false
+#
+# 3. Set production logging level
+#    logging.level.org.example=INFO
+#
+# 4. Use environment variables for secrets
+#    gemini.api.key=${GEMINI_API_KEY}
+#
+# 5. Enable HTTPS
+#    server.ssl.enabled=true
+#    server.ssl.key-store=classpath:keystore.p12
+#    server.ssl.key-store-password=your_password
+
