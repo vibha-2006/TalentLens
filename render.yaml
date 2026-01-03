@@ -1,6 +1,7 @@
 services:
   - type: web
     name: talentlens-backend
+    runtime: docker
     plan: free
     buildCommand: mvn clean install -DskipTests
     startCommand: java -Dserver.port=$PORT -jar target/TalentLens-1.0-SNAPSHOT.jar
