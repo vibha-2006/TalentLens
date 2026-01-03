@@ -4,7 +4,6 @@ services:
     runtime: docker
     plan: free
     buildCommand: mvn clean install -DskipTests
-    startCommand: java -Dserver.port=$PORT -jar target/TalentLens-1.0-SNAPSHOT.jar
     healthCheckPath: /api/admin/settings
     envVars:
       - key: SPRING_PROFILES_ACTIVE
