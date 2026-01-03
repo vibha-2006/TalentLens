@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: talentlens-backend
+    env: java
+    plan: free
+    buildCommand: mvn clean install -DskipTests
+    startCommand: java -Dserver.port=$PORT -jar target/TalentLens-1.0-SNAPSHOT.jar
+    healthCheckPath: /api/admin/settings
+    envVars:
+      - key: SPRING_PROFILES_ACTIVE
+        value: prod
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: FRONTEND_URL
+        sync: false
+
