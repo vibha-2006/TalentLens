@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.example.dto.AIAnalysisResponse;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -13,14 +13,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class GroqService implements AIService {
 
-    @Value("${groq.api.key}")
-    private String apiKey;
-
-    @Value("${groq.model:llama-3.1-70b-versatile}")
-    private String model;
-
-    @Value("${groq.api.url:https://api.groq.com/openai/v1/chat/completions}")
-    private String apiUrl;
+    @Autowired
+    private AISettingsService aiSettingsService;
 
     private final OkHttpClient client;
     private final ObjectMapper objectMapper;
@@ -86,6 +80,11 @@ public class GroqService implements AIService {
 
     private String callGroqAPI(String prompt) {
         try {
+            // Get current settings dynamically
+            String apiKey = aiSettingsService.getGroqApiKey();
+            String model = aiSettingsService.getGroqModel();
+            String apiUrl = aiSettingsService.getGroqApiUrl();
+
             // Build the JSON request body (Groq uses OpenAI-compatible API)
             String requestBody = String.format("""
                 {
@@ -112,6 +111,17 @@ public class GroqService implements AIService {
 
             System.out.println("DEBUG: Calling Groq API at: " + apiUrl);
             System.out.println("DEBUG: Using model: " + model);
+            System.out.println("DEBUG: API key loaded: " + (apiKey != null && !apiKey.isEmpty() ?
+                (apiKey.startsWith("gsk_") ? "Yes (starts with gsk_)" : "Yes (but format may be incorrect)") : "No (empty or null)"));
+            System.out.println("DEBUG: API key length: " + (apiKey != null ? apiKey.length() : 0));
+
+            // Validate API key
+            if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_groq_api_key_here")) {
+                throw new RuntimeException("Groq API key is not configured. Please:\n" +
+                        "1. Get your API key from https://console.groq.com/keys\n" +
+                        "2. Update it in Admin Settings or set GROQ_API_KEY environment variable\n" +
+                        "3. Ensure the key starts with 'gsk_'");
+            }
 
             Request request = new Request.Builder()
                     .url(apiUrl)

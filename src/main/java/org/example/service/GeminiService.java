@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.example.dto.AIAnalysisResponse;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -15,14 +15,8 @@ import java.util.regex.Pattern;
 @Service
 public class GeminiService implements AIService {
 
-    @Value("${gemini.api.key}")
-    private String apiKey;
-
-    @Value("${gemini.model:gemini-1.5-flash}")
-    private String model;
-
-    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models}")
-    private String apiUrl;
+    @Autowired
+    private AISettingsService aiSettingsService;
 
     private final OkHttpClient client;
     private final ObjectMapper objectMapper;
@@ -88,6 +82,11 @@ public class GeminiService implements AIService {
 
     private String callGeminiAPI(String prompt) {
         try {
+            // Get current settings dynamically
+            String apiKey = aiSettingsService.getGeminiApiKey();
+            String model = aiSettingsService.getGeminiModel();
+            String apiUrl = aiSettingsService.getGeminiApiUrl();
+
             // Build the Gemini API URL with the model and API key
             String fullUrl = String.format("%s/%s:generateContent?key=%s",
                     apiUrl, model, apiKey);

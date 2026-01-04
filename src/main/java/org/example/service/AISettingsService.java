@@ -16,32 +16,66 @@ public class AISettingsService {
 
     private final ConfigurableEnvironment environment;
 
-    @Value("${openai.api.key:}")
-    private String openaiApiKey;
-
-    @Value("${openai.model:gpt-3.5-turbo}")
-    private String openaiModel;
-
-    @Value("${gemini.api.key:}")
-    private String geminiApiKey;
-
-    @Value("${gemini.model:gemini-1.5-flash}")
-    private String geminiModel;
-
-    @Value("${gemini.api.url:https://generativelanguage.googleapis.com/v1beta/models}")
-    private String geminiApiUrl;
-
-    @Value("${groq.api.key:}")
-    private String groqApiKey;
-
-    @Value("${groq.model:llama-3.3-70b-versatile}")
-    private String groqModel;
-
-    @Value("${groq.api.url:https://api.groq.com/openai/v1/chat/completions}")
-    private String groqApiUrl;
+    // Runtime storage for settings (survives in memory)
+    private final Map<String, String> runtimeSettings = new HashMap<>();
 
     public AISettingsService(ConfigurableEnvironment environment) {
         this.environment = environment;
+        initializeRuntimeSettings();
+    }
+
+    private void initializeRuntimeSettings() {
+        // Initialize from environment or properties
+        runtimeSettings.put("openai.api.key", getProperty("openai.api.key", ""));
+        runtimeSettings.put("openai.model", getProperty("openai.model", "gpt-3.5-turbo"));
+        runtimeSettings.put("gemini.api.key", getProperty("gemini.api.key", ""));
+        runtimeSettings.put("gemini.model", getProperty("gemini.model", "gemini-1.5-flash"));
+        runtimeSettings.put("gemini.api.url", getProperty("gemini.api.url", "https://generativelanguage.googleapis.com/v1beta/models"));
+        runtimeSettings.put("groq.api.key", getProperty("groq.api.key", ""));
+        runtimeSettings.put("groq.model", getProperty("groq.model", "llama-3.3-70b-versatile"));
+        runtimeSettings.put("groq.api.url", getProperty("groq.api.url", "https://api.groq.com/openai/v1/chat/completions"));
+    }
+
+    private String getProperty(String key, String defaultValue) {
+        // First check runtime settings, then environment, then default
+        String value = runtimeSettings.get(key);
+        if (value != null && !value.isEmpty()) {
+            return value;
+        }
+        return environment.getProperty(key, defaultValue);
+    }
+
+    // Public getters for API keys and settings
+    public String getOpenAiApiKey() {
+        return getProperty("openai.api.key", "");
+    }
+
+    public String getOpenAiModel() {
+        return getProperty("openai.model", "gpt-3.5-turbo");
+    }
+
+    public String getGeminiApiKey() {
+        return getProperty("gemini.api.key", "");
+    }
+
+    public String getGeminiModel() {
+        return getProperty("gemini.model", "gemini-1.5-flash");
+    }
+
+    public String getGeminiApiUrl() {
+        return getProperty("gemini.api.url", "https://generativelanguage.googleapis.com/v1beta/models");
+    }
+
+    public String getGroqApiKey() {
+        return getProperty("groq.api.key", "");
+    }
+
+    public String getGroqModel() {
+        return getProperty("groq.model", "llama-3.3-70b-versatile");
+    }
+
+    public String getGroqApiUrl() {
+        return getProperty("groq.api.url", "https://api.groq.com/openai/v1/chat/completions");
     }
 
     public AllAISettingsDTO getAllSettings() {
@@ -50,26 +84,26 @@ public class AISettingsService {
         // OpenAI settings
         AISettingsDTO openaiSettings = new AISettingsDTO();
         openaiSettings.setProvider("openai");
-        openaiSettings.setApiKey(maskApiKey(openaiApiKey));
-        openaiSettings.setModel(openaiModel);
+        openaiSettings.setApiKey(maskApiKey(getOpenAiApiKey()));
+        openaiSettings.setModel(getOpenAiModel());
         openaiSettings.setApiUrl("https://api.openai.com/v1/chat/completions");
-        openaiSettings.setEnabled(!openaiApiKey.isEmpty());
+        openaiSettings.setEnabled(!getOpenAiApiKey().isEmpty());
 
         // Gemini settings
         AISettingsDTO geminiSettings = new AISettingsDTO();
         geminiSettings.setProvider("gemini");
-        geminiSettings.setApiKey(maskApiKey(geminiApiKey));
-        geminiSettings.setModel(geminiModel);
-        geminiSettings.setApiUrl(geminiApiUrl);
-        geminiSettings.setEnabled(!geminiApiKey.isEmpty());
+        geminiSettings.setApiKey(maskApiKey(getGeminiApiKey()));
+        geminiSettings.setModel(getGeminiModel());
+        geminiSettings.setApiUrl(getGeminiApiUrl());
+        geminiSettings.setEnabled(!getGeminiApiKey().isEmpty());
 
         // Groq settings
         AISettingsDTO groqSettings = new AISettingsDTO();
         groqSettings.setProvider("groq");
-        groqSettings.setApiKey(maskApiKey(groqApiKey));
-        groqSettings.setModel(groqModel);
-        groqSettings.setApiUrl(groqApiUrl);
-        groqSettings.setEnabled(!groqApiKey.isEmpty());
+        groqSettings.setApiKey(maskApiKey(getGroqApiKey()));
+        groqSettings.setModel(getGroqModel());
+        groqSettings.setApiUrl(getGroqApiUrl());
+        groqSettings.setEnabled(!getGroqApiKey().isEmpty());
 
         allSettings.setOpenai(openaiSettings);
         allSettings.setGemini(geminiSettings);
@@ -79,18 +113,14 @@ public class AISettingsService {
     }
 
     public void updateSettings(AllAISettingsDTO settings) throws IOException {
-        Map<String, Object> propertyMap = new HashMap<>();
-
         // Update OpenAI settings
         if (settings.getOpenai() != null) {
             AISettingsDTO openai = settings.getOpenai();
             if (openai.getApiKey() != null && !openai.getApiKey().contains("***")) {
-                propertyMap.put("openai.api.key", openai.getApiKey());
-                this.openaiApiKey = openai.getApiKey();
+                runtimeSettings.put("openai.api.key", openai.getApiKey());
             }
             if (openai.getModel() != null && !openai.getModel().isEmpty()) {
-                propertyMap.put("openai.model", openai.getModel());
-                this.openaiModel = openai.getModel();
+                runtimeSettings.put("openai.model", openai.getModel());
             }
         }
 
@@ -98,16 +128,13 @@ public class AISettingsService {
         if (settings.getGemini() != null) {
             AISettingsDTO gemini = settings.getGemini();
             if (gemini.getApiKey() != null && !gemini.getApiKey().contains("***")) {
-                propertyMap.put("gemini.api.key", gemini.getApiKey());
-                this.geminiApiKey = gemini.getApiKey();
+                runtimeSettings.put("gemini.api.key", gemini.getApiKey());
             }
             if (gemini.getModel() != null && !gemini.getModel().isEmpty()) {
-                propertyMap.put("gemini.model", gemini.getModel());
-                this.geminiModel = gemini.getModel();
+                runtimeSettings.put("gemini.model", gemini.getModel());
             }
             if (gemini.getApiUrl() != null && !gemini.getApiUrl().isEmpty()) {
-                propertyMap.put("gemini.api.url", gemini.getApiUrl());
-                this.geminiApiUrl = gemini.getApiUrl();
+                runtimeSettings.put("gemini.api.url", gemini.getApiUrl());
             }
         }
 
@@ -115,25 +142,19 @@ public class AISettingsService {
         if (settings.getGroq() != null) {
             AISettingsDTO groq = settings.getGroq();
             if (groq.getApiKey() != null && !groq.getApiKey().contains("***")) {
-                propertyMap.put("groq.api.key", groq.getApiKey());
-                this.groqApiKey = groq.getApiKey();
+                runtimeSettings.put("groq.api.key", groq.getApiKey());
             }
             if (groq.getModel() != null && !groq.getModel().isEmpty()) {
-                propertyMap.put("groq.model", groq.getModel());
-                this.groqModel = groq.getModel();
+                runtimeSettings.put("groq.model", groq.getModel());
             }
             if (groq.getApiUrl() != null && !groq.getApiUrl().isEmpty()) {
-                propertyMap.put("groq.api.url", groq.getApiUrl());
-                this.groqApiUrl = groq.getApiUrl();
+                runtimeSettings.put("groq.api.url", groq.getApiUrl());
             }
         }
 
-        // Update runtime properties only (no file persistence in production)
-        MapPropertySource mapPropertySource = new MapPropertySource("dynamicProperties", propertyMap);
-        environment.getPropertySources().addFirst(mapPropertySource);
-
-        // Note: In production (when running from JAR), settings are stored in memory only
-        // To persist settings across restarts, use environment variables in your deployment platform
+        // Note: Settings are stored in memory only
+        // For production, set environment variables in your deployment platform (Render)
+        // The runtime settings will persist as long as the application is running
     }
 
     private String maskApiKey(String apiKey) {
@@ -151,11 +172,11 @@ public class AISettingsService {
         // For now, it just checks if the API key is configured
         switch (provider.toLowerCase()) {
             case "openai":
-                return !openaiApiKey.isEmpty();
+                return !getOpenAiApiKey().isEmpty();
             case "gemini":
-                return !geminiApiKey.isEmpty();
+                return !getGeminiApiKey().isEmpty();
             case "groq":
-                return !groqApiKey.isEmpty();
+                return !getGroqApiKey().isEmpty();
             default:
                 return false;
         }

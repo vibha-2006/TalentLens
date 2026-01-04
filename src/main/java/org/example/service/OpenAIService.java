@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import okhttp3.*;
 import org.example.dto.AIAnalysisResponse;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -15,14 +15,8 @@ import java.util.regex.Pattern;
 @Service
 public class OpenAIService implements AIService {
 
-    @Value("${openai.api.key}")
-    private String apiKey;
-
-    @Value("${openai.model:gpt-3.5-turbo}")
-    private String model;
-
-    @Value("${openai.api.url:https://api.openai.com/v1/chat/completions}")
-    private String apiUrl;
+    @Autowired
+    private AISettingsService aiSettingsService;
 
     private final OkHttpClient client;
     private final ObjectMapper objectMapper;
@@ -82,6 +76,11 @@ public class OpenAIService implements AIService {
 
     private String callOpenAIAPI(String prompt) {
         try {
+            // Get current settings dynamically
+            String apiKey = aiSettingsService.getOpenAiApiKey();
+            String model = aiSettingsService.getOpenAiModel();
+            String apiUrl = "https://api.openai.com/v1/chat/completions";
+
             // Build the JSON request body
             String requestBody = String.format("""
                 {
