@@ -7,13 +7,9 @@ import org.springframework.core.env.ConfigurableEnvironment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.stereotype.Service;
 
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Properties;
 
 @Service
 public class AISettingsService {
@@ -132,32 +128,12 @@ public class AISettingsService {
             }
         }
 
-        // Update runtime properties
+        // Update runtime properties only (no file persistence in production)
         MapPropertySource mapPropertySource = new MapPropertySource("dynamicProperties", propertyMap);
         environment.getPropertySources().addFirst(mapPropertySource);
 
-        // Persist to application.properties file
-        updatePropertiesFile(propertyMap);
-    }
-
-    private void updatePropertiesFile(Map<String, Object> updates) throws IOException {
-        String propertiesPath = "src/main/resources/application.properties";
-        Properties properties = new Properties();
-
-        // Read existing properties
-        if (Files.exists(Paths.get(propertiesPath))) {
-            properties.load(Files.newInputStream(Paths.get(propertiesPath)));
-        }
-
-        // Update with new values
-        for (Map.Entry<String, Object> entry : updates.entrySet()) {
-            properties.setProperty(entry.getKey(), entry.getValue().toString());
-        }
-
-        // Write back to file
-        try (FileOutputStream output = new FileOutputStream(propertiesPath)) {
-            properties.store(output, "Updated by Admin Settings - " + java.time.LocalDateTime.now());
-        }
+        // Note: In production (when running from JAR), settings are stored in memory only
+        // To persist settings across restarts, use environment variables in your deployment platform
     }
 
     private String maskApiKey(String apiKey) {
