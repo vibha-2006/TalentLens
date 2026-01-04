@@ -11,7 +11,6 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/job-requirements")
-@CrossOrigin(origins = "*")
 public class JobRequirementController {
 
     @Autowired
