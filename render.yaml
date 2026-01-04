@@ -22,5 +22,12 @@ services:
         value: gemini-1.5-flash
       - key: GROQ_MODEL
         value: llama-3.3-70b-versatile
+      # Logging configuration for debugging
+      - key: LOGGING_LEVEL_ORG_SPRINGFRAMEWORK
+        value: DEBUG
+      - key: LOGGING_LEVEL_ORG_EXAMPLE
+        value: DEBUG
+      - key: JAVA_OPTS
+        value: "-verbose:gc -XX:+PrintCommandLineFlags -Dlogging.level.root=INFO"
 
 
