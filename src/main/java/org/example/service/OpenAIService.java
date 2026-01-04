@@ -81,6 +81,20 @@ public class OpenAIService implements AIService {
             String model = aiSettingsService.getOpenAiModel();
             String apiUrl = "https://api.openai.com/v1/chat/completions";
 
+            System.out.println("DEBUG: Calling OpenAI API at: " + apiUrl);
+            System.out.println("DEBUG: Using model: " + model);
+            System.out.println("DEBUG: API key loaded: " + (apiKey != null && !apiKey.isEmpty() ?
+                (apiKey.startsWith("sk-") ? "Yes (starts with sk-)" : "Yes (but format may be incorrect)") : "No (empty or null)"));
+            System.out.println("DEBUG: API key length: " + (apiKey != null ? apiKey.length() : 0));
+
+            // Validate API key
+            if (apiKey == null || apiKey.isEmpty() || apiKey.equals("your_openai_api_key_here")) {
+                throw new RuntimeException("OpenAI API key is not configured. Please:\n" +
+                        "1. Get your API key from https://platform.openai.com/api-keys\n" +
+                        "2. Update it in Admin Settings or set OPENAI_API_KEY environment variable\n" +
+                        "3. Ensure the key starts with 'sk-'");
+            }
+
             // Build the JSON request body
             String requestBody = String.format("""
                 {
@@ -105,8 +119,6 @@ public class OpenAIService implements AIService {
                     MediaType.parse("application/json")
             );
 
-            System.out.println("DEBUG: Calling OpenAI API at: " + apiUrl);
-            System.out.println("DEBUG: Using model: " + model);
 
             Request request = new Request.Builder()
                     .url(apiUrl)
