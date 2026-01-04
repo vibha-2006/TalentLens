@@ -21,7 +21,7 @@ RUN echo "==== Copied package files ====" && \
 
 # Install dependencies with verbose output
 RUN echo "==== Running npm ci ====" && \
-    npm ci --verbose
+    npm ci || (echo "npm ci failed, trying npm install..." && npm install)
 
 # Debug: Show installed dependencies
 RUN echo "==== Dependencies installed ====" && \
@@ -40,7 +40,7 @@ RUN echo "==== All frontend files ====" && \
 
 # Build the React app with verbose output
 RUN echo "==== Building React app ====" && \
-    npm run build --verbose
+    npm run build
 
 # Debug: Verify build output
 RUN echo "==== Build output ====" && \
