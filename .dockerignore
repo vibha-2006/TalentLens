@@ -1,0 +1,43 @@
+# Node modules
+frontend/node_modules
+frontend/build
+
+# Maven
+target
+.mvn
+
+# IDE
+.idea
+.vscode
+*.iml
+*.iws
+*.ipr
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
+logs
+
+# Test files
+src/test
+frontend/src/**/*.test.js
+frontend/src/**/*.spec.js
+
+# Documentation
+*.md
+docs
+
+# Build scripts
+*.bat
+*.sh
+
+# Config files (not needed in container)
+lombok.config
+

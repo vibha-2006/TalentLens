@@ -1,6 +1,9 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+// Use relative URL in production, localhost in development
+const API_BASE_URL = process.env.NODE_ENV === 'production'
+    ? '/api'
+    : 'http://localhost:8080/api';
 
 export const resumeService = {
     uploadResume: async (file, aiProvider = 'openai') => {
